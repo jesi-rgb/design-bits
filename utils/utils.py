@@ -1,6 +1,7 @@
 from manim import *
 from typing import Iterable
 from math import floor
+from design_bits_system import *
 
 
 def get_1d_index(i, j, pixel_array):
@@ -23,10 +24,10 @@ def focus_on(frame, mobjects, buff=1):
             "Mobjects argument can either be a single mobject, a single VGroup or an iterable of mobjects (tuple, list, np.array...)"
         )
 
-    mob_w = vmobject.width
-    mob_h = vmobject.height
+    frame_aspect_ratio = config.frame_width / config.frame_height
+    mob_aspect_ratio = vmobject.width / vmobject.height
 
-    if mob_w >= mob_h:
+    if mob_aspect_ratio > frame_aspect_ratio:
         return frame.animate.set_width(vmobject.width + buff).move_to(vmobject)
     else:
         return frame.animate.set_height(vmobject.height + buff).move_to(vmobject)
@@ -67,14 +68,14 @@ class Pixel(VGroup):
             number_string = str(floor(n))
 
         self.number = (
-            Text(number_string, font="PT Mono", weight=SEMIBOLD)
+            Text(number_string, font=DB_MONO, weight=SEMIBOLD)
             .scale(0.7)
             .set_color(g2h(1) if abs(n) < 180 else g2h(0))
             .set_stroke(opacity=1 if include_numbers else 0)
         )
 
         if normalize:
-            self.number.scale_to_fit_width(self.pixel.width - self.pixel.width * 0.1)
+            self.number.scale_to_fit_width(self.pixel.width - self.pixel.width * 0.3)
 
         if include_numbers:
             super().__init__(self.pixel, self.number)
@@ -119,7 +120,7 @@ class PixelArray(VGroup):
         super().__init__(*self.pixels)
 
         if len(img.shape) == 1:
-            self.arrange(RIGHT)
+            self.arrange(RIGHT, buff=buff)
         else:
             self.arrange_in_grid(img.shape[0], img.shape[1], buff=buff)
 
