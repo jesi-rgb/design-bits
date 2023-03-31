@@ -10,39 +10,65 @@ from design_bits_system import *
 config.background_color = DB_BLACK
 
 
+def multiply(i, j):
+    return i * j
+
+
+def screen(i, j):
+    return 1 - ((1 - i) * (1 - j))
+
+
 class MatrixComparison(MovingCameraScene):
     def construct(self):
         frame = self.camera.frame
+
         sample_size = 10
-        base = np.linspace(0, 1, sample_size)
+        mult_matrix = self.build_matrix_comparison(
+            sample_size=sample_size, operation=multiply
+        )
+        screen_matrix = self.build_matrix_comparison(operation=screen)
+
+        mult_matrix_mob = PixelArray(
+            mult_matrix * 255, color_mode="GRAY", include_numbers=True, normalize=True
+        )
+        screen_matrix_mob = PixelArray(
+            screen_matrix * 255, color_mode="GRAY", include_numbers=True, normalize=True
+        )
+        blend_scale = (
+            PixelArray(
+                np.linspace(1, 0, sample_size) * 255,
+                color_mode="GRAY",
+                include_numbers=True,
+                normalize=True,
+            )
+            .arrange(DOWN, buff=0)
+            .next_to(mult_matrix_mob, LEFT, buff=1)
+        )
+        base_scale = PixelArray(
+            np.linspace(0, 1, sample_size) * 255,
+            color_mode="GRAY",
+            include_numbers=True,
+            normalize=True,
+        ).next_to(mult_matrix_mob, DOWN, buff=1)
+
+        demo = VGroup(mult_matrix_mob, blend_scale, base_scale)
+        self.play(FadeIn(demo))
+        self.play(focus_on(frame, demo, buff=1))
+
+        self.play(Transform(mult_matrix_mob, screen_matrix_mob))
+
+    def build_matrix_comparison(self, sample_size=10, operation=multiply):
+        base = np.linspace(1, 0, sample_size)
         blend = np.linspace(0, 1, sample_size)
 
         mult_matrix = []
         for i in base:
             aux_arr = []
             for j in blend:
-                aux_arr.append(i * j)
+                aux_arr.append(operation(i, j))
             mult_matrix.append(aux_arr)
 
-        mult_matrix = np.array(mult_matrix)
-
-        mult_matrix_mob = PixelArray(
-            mult_matrix * 255, color_mode="GRAY", include_numbers=True, normalize=True
-        )
-        blend_scale = (
-            PixelArray(
-                blend * 255, color_mode="GRAY", include_numbers=True, normalize=True
-            )
-            .arrange(DOWN, buff=0)
-            .next_to(mult_matrix_mob, LEFT, buff=1)
-        )
-        base_scale = PixelArray(
-            base * 255, color_mode="GRAY", include_numbers=True, normalize=True
-        ).next_to(mult_matrix_mob, DOWN, buff=1)
-
-        demo = VGroup(mult_matrix_mob, blend_scale, base_scale)
-        self.play(FadeIn(demo))
-        self.play(focus_on(frame, demo, buff=1))
+        return np.array(mult_matrix)
 
 
 class PixelByPixelComparison(Scene):
