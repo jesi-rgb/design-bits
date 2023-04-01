@@ -103,19 +103,17 @@ class PixelArray(VGroup):
 
         self.shape = img.shape
 
-        self.pixels = VGroup()
-
         flat_img = img.flatten()
-        for p in flat_img:
-            self.pixels.add(
-                Pixel(
-                    p,
-                    outline=outline,
-                    color_mode=self.color_mode,
-                    normalize=self.normalize,
-                    include_numbers=self.include_numbers,
-                )
+        self.pixels = [
+            Pixel(
+                p,
+                outline=outline,
+                color_mode=self.color_mode,
+                normalize=self.normalize,
+                include_numbers=self.include_numbers,
             )
+            for p in flat_img
+        ]
 
         super().__init__(*self.pixels)
 
