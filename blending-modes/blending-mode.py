@@ -3,7 +3,7 @@ import sys
 sys.path.insert(1, "utils/")
 
 from manim import *
-from utils import PixelArray, focus_on
+from utils import PixelArray, DBTitle, focus_on
 from design_bits_system import *
 
 config.background_color = DB_BLACK
@@ -69,18 +69,10 @@ class MatrixComparison(MovingCameraScene):
 
         sample_size = 11
         mult_matrix = self.build_matrix_comparison(
-            sample_size=sample_size, operation=subtract
+            sample_size=sample_size, operation=difference
         )
-        screen_matrix = self.build_matrix_comparison(
-            sample_size=sample_size, operation=screen
-        )
-
         mult_matrix_mob = PixelArray(
-            mult_matrix * 255, color_mode="GRAY", include_numbers=True, normalize=True
-        )
-
-        screen_matrix_mob = PixelArray(
-            screen_matrix * 255, color_mode="GRAY", include_numbers=True, normalize=True
+            mult_matrix * 255, normalize=True, include_numbers=True, color_mode="GRAY"
         )
 
         foreground_scale = (
@@ -100,30 +92,47 @@ class MatrixComparison(MovingCameraScene):
             normalize=True,
         ).next_to(mult_matrix_mob, UP, buff=1)
 
-        mult_title = (
+        title = (
             Text("Multiply", font=DB_FONT, weight=SEMIBOLD)
             .set_color(DB_LIGHT_GREEN)
             .scale(1.8)
-            .next_to(VGroup(mult_matrix_mob, foreground_scale), UP, buff=1)
-        )
-        screen_title = (
-            Text("Screen", font=DB_FONT, weight=SEMIBOLD)
-            .set_color(DB_LIGHT_GREEN)
-            .scale(1.8)
-            .next_to(VGroup(mult_matrix_mob, foreground_scale), UP, buff=1)
-        )
-        demo = VGroup(mult_matrix_mob, foreground_scale, background_scale)
-        self.play(
-            FadeIn(
-                demo,
+            .next_to(
+                VGroup(mult_matrix_mob, foreground_scale, background_scale), UP, buff=1
             )
         )
-        self.play(focus_on(frame, [demo, mult_title], buff=1))
+        demo = VGroup(mult_matrix_mob, foreground_scale, background_scale)
 
-        # self.play(
-        #     Transform(mult_matrix_mob, screen_matrix_mob),
-        #     FadeTransform(mult_title, screen_title),
-        # )
+        self.play(FadeIn(demo))
+        self.play(focus_on(frame, [demo, title], buff=1))
+
+        modes = {
+            "Lighten": lighten,
+            "Darken": darken,
+            "Multiply": multiply,
+            "Screen": screen,
+            "Overlay": overlay,
+            "Hard Light": hard_light,
+            "Soft Light": soft_light,
+            "Difference": difference,
+            "Subtract": subtract,
+        }
+
+        for t, mode in modes.items():
+            new_title = DBTitle(t).scale(1.8).move_to(title)
+            matrix_mode = self.build_matrix_comparison(sample_size, mode)
+            matrix_mob = PixelArray(
+                matrix_mode * 255,
+                normalize=True,
+                include_numbers=True,
+                color_mode="GRAY",
+            )
+            self.play(
+                FadeOut(title, shift=UP * 0.3),
+                FadeIn(new_title, shift=UP * 0.3),
+                Transform(mult_matrix_mob, matrix_mob),
+            )
+            title = new_title
+            self.wait()
 
     def build_matrix_comparison(self, sample_size=11, operation=multiply):
         base = np.linspace(0, 1, sample_size)

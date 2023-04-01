@@ -36,6 +36,14 @@ def focus_on(frame, mobjects, buff=1):
 ###
 ### CLASSES
 ###
+
+
+class DBTitle(Text):
+    def __init__(self, text, weight=SEMIBOLD):
+        super().__init__(text, weight=weight, font=DB_FONT)
+        self.set_color(DB_LIGHT_GREEN)
+
+
 class Pixel(VGroup):
     def __init__(
         self, n, color_mode: str, outline=True, normalize=False, include_numbers=True
@@ -70,7 +78,7 @@ class Pixel(VGroup):
         self.number = (
             Text(number_string, font=DB_MONO, weight=SEMIBOLD)
             .scale(0.7)
-            .set_color(g2h(1) if abs(n) < 180 else g2h(0))
+            .set_color(g2h(1) if abs(n) < 170 else g2h(0))
             .set_stroke(opacity=1 if include_numbers else 0)
         )
 
