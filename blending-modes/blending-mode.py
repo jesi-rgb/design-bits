@@ -14,6 +14,16 @@ def clamp(i):
 
 
 # blend modes
+
+
+def lighten(b, f):
+    return max(b, f)
+
+
+def darken(b, f):
+    return min(b, f)
+
+
 def multiply(b, f):
     return b * f
 
@@ -22,20 +32,21 @@ def screen(b, f):
     return 1 - ((1 - b) * (1 - f))
 
 
-def lighten(i, j):
-    return i if i > j else j
-
-
-def darken(b, f):
-    return b if b < f else f
-
-
 def color_burn(b, f):
     return 1 - clamp((1 - b) / (f + 0.0001))
 
 
 def color_dodge(b, f):
     return clamp(b / ((1 - f) + 0.0001))
+
+
+def color_dodge_css(b, f):
+    if b == 0:
+        return 0
+    elif f == 1:
+        return 1
+    else:
+        return min(1, b / (1 - f))
 
 
 def overlay(b, f):
@@ -69,7 +80,7 @@ class MatrixComparison(MovingCameraScene):
 
         sample_size = 11
         lighten_matrix = self.build_matrix_comparison(
-            sample_size=sample_size, operation=lighten
+            sample_size=sample_size, operation=color_dodge
         )
         lighten_matrix_mob = PixelArray(
             lighten_matrix * 255,
