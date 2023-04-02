@@ -68,11 +68,14 @@ class MatrixComparison(MovingCameraScene):
         frame = self.camera.frame
 
         sample_size = 11
-        mult_matrix = self.build_matrix_comparison(
-            sample_size=sample_size, operation=difference
+        lighten_matrix = self.build_matrix_comparison(
+            sample_size=sample_size, operation=lighten
         )
-        mult_matrix_mob = PixelArray(
-            mult_matrix * 255, normalize=True, include_numbers=True, color_mode="GRAY"
+        lighten_matrix_mob = PixelArray(
+            lighten_matrix * 255,
+            normalize=True,
+            include_numbers=True,
+            color_mode="GRAY",
         )
 
         foreground_scale = (
@@ -83,24 +86,26 @@ class MatrixComparison(MovingCameraScene):
                 normalize=True,
             )
             .arrange(DOWN, buff=0)
-            .next_to(mult_matrix_mob, LEFT, buff=1)
+            .next_to(lighten_matrix_mob, LEFT, buff=1)
         )
         background_scale = PixelArray(
             np.linspace(0, 1, sample_size) * 255,
             color_mode="GRAY",
             include_numbers=True,
             normalize=True,
-        ).next_to(mult_matrix_mob, UP, buff=1)
+        ).next_to(lighten_matrix_mob, UP, buff=1)
 
         title = (
-            Text("Multiply", font=DB_FONT, weight=SEMIBOLD)
+            Text("Lighten", font=DB_FONT, weight=SEMIBOLD)
             .set_color(DB_LIGHT_GREEN)
             .scale(1.8)
             .next_to(
-                VGroup(mult_matrix_mob, foreground_scale, background_scale), UP, buff=1
+                VGroup(lighten_matrix_mob, foreground_scale, background_scale),
+                UP,
+                buff=1,
             )
         )
-        demo = VGroup(mult_matrix_mob, foreground_scale, background_scale)
+        demo = VGroup(lighten_matrix_mob, foreground_scale, background_scale)
 
         self.play(FadeIn(demo))
         self.play(focus_on(frame, [demo, title], buff=1))
@@ -129,7 +134,7 @@ class MatrixComparison(MovingCameraScene):
             self.play(
                 FadeOut(title, shift=UP * 0.3),
                 FadeIn(new_title, shift=UP * 0.3),
-                Transform(mult_matrix_mob, matrix_mob),
+                Transform(lighten_matrix_mob, matrix_mob),
             )
             title = new_title
             self.wait()
