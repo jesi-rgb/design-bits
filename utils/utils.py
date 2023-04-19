@@ -131,10 +131,16 @@ class PixelArray(VGroup):
             self.arrange_in_grid(img.shape[0], img.shape[1], buff=buff)
 
         if fit_to_frame:
-            # sometimes, these mobjects can be very large and it's inconvenient
-            # having to rescale them manually every time.
-            self.scale_to_fit_height(config.frame_height - 0.5)
-            self.scale_to_fit_width(config.frame_width - 0.5)
+            frame_aspect_ratio = config.frame_width / config.frame_height
+            mob_aspect_ratio = self.width / self.height
+
+            # this means the mob is wider than it is taller
+            if mob_aspect_ratio > frame_aspect_ratio:
+                self.scale_to_fit_width(config.frame_width - config.frame_width * 0.3)
+            else:
+                self.scale_to_fit_height(
+                    config.frame_height - config.frame_height * 0.3
+                )
 
         self.dict = {index: p for index, p in enumerate(self)}
 

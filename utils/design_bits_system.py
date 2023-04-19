@@ -1,5 +1,5 @@
 DB_FONT = "Supreme"
-DB_MONO = "DM Mono"
+DB_MONO = "PT Mono"
 
 DB_GREEN = "#1abc9c"
 DB_LIGHT_GREEN = "#aff7d0"
