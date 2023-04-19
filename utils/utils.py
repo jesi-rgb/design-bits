@@ -165,7 +165,12 @@ class PixelArray(VGroup):
             raise TypeError("index must be either a tuple or an integer")
 
         new_pixel = VGroup(
-            Pixel(new_value, color_mode=self.color_mode)
+            Pixel(
+                new_value,
+                color_mode=self.color_mode,
+                normalize=self.normalize,
+                include_numbers=self.include_numbers,
+            )
             .scale_to_fit_height(pixel_mob.height)
             .move_to(pixel_mob),
         )

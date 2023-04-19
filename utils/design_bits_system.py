@@ -6,5 +6,7 @@ DB_LIGHT_GREEN = "#aff7d0"
 DB_DARK_GREEN = "#0e685f"
 DB_BLACK = "#021713"
 
+DB_YELLOW = "#fff9cf"
+
 DB_VIOLET = "#c0b2f0"
 DB_PURPLE = "#553ca5"
