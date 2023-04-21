@@ -57,6 +57,7 @@ class Convolution(MovingCameraScene):
             color_mode="GRAY",
             include_numbers=True,
             fit_to_frame=False,
+            normalize=True,
         ).next_to(img_mob, RIGHT)
 
         kernel_center_mob = (
@@ -211,3 +212,36 @@ class GaussianConvolution(MovingCameraScene):
         self.play(FadeOut(kernel_mob))
 
         self.wait()
+
+
+class CompareKernels(MovingCameraScene):
+    def construct(self):
+        big_kernel = get_gaussian_kernel(7)
+
+        big_kernel_mob = PixelArray(big_kernel, include_numbers=True, normalize=True)
+
+        self.play(FadeIn(big_kernel_mob))
+
+        self.wait()
+
+
+class Test(MovingCameraScene):
+    def construct(self):
+        big_kernel = np.random.randint(0, 255, (10, 10))
+
+        big_kernel_mob = (
+            VGroup(
+                *[
+                    VGroup(
+                        Square(),
+                        Text(f"{c}", font="Arial", weight=BOLD),
+                    ).arrange(ORIGIN)
+                    for row in big_kernel
+                    for c in row
+                ]
+            )
+            .arrange_in_grid(rows=10, cols=10, buff=0)
+            .scale(0.3)
+        )
+
+        self.add(big_kernel_mob)

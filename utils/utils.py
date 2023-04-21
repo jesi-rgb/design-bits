@@ -98,7 +98,7 @@ class PixelArray(VGroup):
         self,
         img: np.ndarray,
         include_numbers=False,
-        color_mode="RGB",
+        color_mode="GRAY",
         normalize=False,
         buff=0,
         outline=True,
