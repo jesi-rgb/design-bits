@@ -75,17 +75,19 @@ class Pixel(VGroup):
         else:
             number_string = str(floor(n))
 
-        self.number = (
-            Text(number_string, font=DB_MONO, weight=SEMIBOLD)
-            .scale(0.7)
-            .set_color(g2h(1) if abs(n) < 170 else g2h(0))
-            .set_stroke(opacity=1 if include_numbers else 0)
-        )
-
-        if normalize:
-            self.number.scale_to_fit_width(self.pixel.width - self.pixel.width * 0.3)
-
         if include_numbers:
+            self.number = (
+                Text(number_string, font=DB_MONO, weight=SEMIBOLD)
+                .scale(0.7)
+                .set_color(g2h(1) if abs(n) < 170 else g2h(0))
+                .set_stroke(opacity=1 if include_numbers else 0)
+            )
+
+            if normalize:
+                self.number.scale_to_fit_width(
+                    self.pixel.width - self.pixel.width * 0.3
+                )
+
             super().__init__(self.pixel, self.number)
         else:
             super().__init__(self.pixel)
@@ -111,7 +113,6 @@ class PixelArray(VGroup):
 
         self.shape = img.shape
 
-        flat_img = img.flatten()
         self.pixels = [
             Pixel(
                 p,
@@ -120,7 +121,7 @@ class PixelArray(VGroup):
                 normalize=self.normalize,
                 include_numbers=self.include_numbers,
             )
-            for p in flat_img
+            for p in img.flatten()
         ]
 
         super().__init__(*self.pixels)
