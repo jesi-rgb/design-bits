@@ -7,12 +7,11 @@ from utils import PixelArray
 
 
 def convolve_mob(img: np.ndarray, kernel: np.ndarray) -> PixelArray:
-    convolved_arr = cv.filter2D(img, cv.CV_8U, kernel)
-    return ImageMobject(convolved_arr)
+    return cv.filter2D(img, -1, kernel)
 
 
 def get_blur_kernel(shape: int = 3) -> np.ndarray:
-    return np.ones((shape, shape)) * (1 / (shape**2)) * 255
+    return np.ones((shape, shape)) * (1 / (shape**2))
 
 
 def get_gaussian_kernel(size=3, sig=1):

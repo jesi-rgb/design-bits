@@ -66,9 +66,9 @@ class Pixel(VGroup):
         self.n = n
 
         if outline:
-            self.pixel.set_stroke(WHITE, width=0.5)
+            self.pixel.set_stroke(GRAY_B, width=0.5)
         else:
-            self.pixel.set_stroke(WHITE, width=0.0)
+            self.pixel.set_stroke(BLACK, width=0.0)
 
         if normalize:
             number_string = f"{n/255:.2f}"
@@ -156,26 +156,27 @@ class PixelArray(VGroup):
             return self.dict[value]
 
     def update_index(self, index, new_value) -> Animation:
+        if not isinstance(index, tuple) and not isinstance(index, int):
+            raise TypeError("index must either be a tuple or an integer")
+
         if isinstance(index, tuple):
             i, j = index
-            one_d_index = get_1d_index(i, j, self.img)
-            pixel_mob = self.dict[one_d_index]
-        elif isinstance(index, int):
-            pixel_mob = self.dict[index]
-        else:
-            raise TypeError("index must be either a tuple or an integer")
+            index = get_1d_index(i, j, self.img)
 
-        new_pixel = VGroup(
+        pixel_to_update = self[index]
+
+        new_pixel = (
             Pixel(
                 new_value,
                 color_mode=self.color_mode,
                 normalize=self.normalize,
                 include_numbers=self.include_numbers,
             )
-            .scale_to_fit_height(pixel_mob.height)
-            .move_to(pixel_mob),
+            .scale_to_fit_height(pixel_to_update.height)
+            .move_to(pixel_to_update)
         )
-        animation = FadeTransform(pixel_mob, new_pixel)
-        pixel_mob = new_pixel
+
+        animation = FadeTransform(pixel_to_update, new_pixel)
+        self[index] = new_pixel
 
         return animation
