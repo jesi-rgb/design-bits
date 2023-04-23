@@ -18,7 +18,7 @@ def get_gaussian_kernel(size=3, sig=1):
     x = np.linspace(-(size / 2) / sig, (size / 2) / sig, size + 1)
     kern1d = np.diff(st.norm.cdf(x))
     kern2d = np.outer(kern1d, kern1d)
-    return (kern2d / kern2d.sum()) * 255
+    return kern2d / kern2d.sum()
 
 
 def get_image(path: str) -> np.ndarray:

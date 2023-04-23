@@ -6,7 +6,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 
 
 from manim import *
-from utils import PixelArray, focus_on
+from utils import DBTitle, PixelArray, focus_on
 from design_bits_system import *
 from blur_utils import convolve, get_blur_kernel, get_gaussian_kernel
 
@@ -235,8 +235,8 @@ class BoxFilterExample(MovingCameraScene):
 
         dims = 15
         img_array = np.zeros((dims, dims), dtype=np.uint8)
-        img_array[:, dims // 2] = 127
-        img_array[dims // 2, :] = 127
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
 
         img_mob = PixelArray(img_array, outline=False, include_numbers=True)
 
@@ -396,3 +396,200 @@ class BoxFilterExample(MovingCameraScene):
         )
 
         self.wait()
+
+
+class BlurringMore(MovingCameraScene):
+    def construct(self):
+        np.random.seed(12)
+        frame = self.camera.frame
+
+        dims = 15
+        img_array = np.zeros((dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        blur_3 = convolve(img_array, get_blur_kernel(3))
+        blur_5 = convolve(img_array, get_blur_kernel(5))
+        blur_7 = convolve(img_array, get_blur_kernel(7))
+
+        img_mob = PixelArray(img_array, outline=False, include_numbers=True)
+        blur3_mob = PixelArray(blur_3, outline=False, include_numbers=True)
+        blur5_mob = PixelArray(blur_5, outline=False, include_numbers=True)
+        blur7_mob = PixelArray(blur_7, outline=False, include_numbers=True)
+
+        self.play(FadeIn(img_mob))
+        self.wait()
+
+        target_pixel = img_mob[dims // 2, dims // 2]
+
+        neighbourhood_target = (
+            Square()
+            .scale_to_fit_width(img_mob[0:3].width)
+            .set_color(DB_LIGHT_GREEN)
+            .set_stroke(width=3)
+            .move_to(img_mob)
+        )
+
+        self.play(
+            focus_on(frame, target_pixel, buff=3),
+            target_pixel.pixel.animate.set_fill(DB_YELLOW),
+            target_pixel.number.animate.set_fill(DB_BLACK),
+            Write(neighbourhood_target),
+        )
+
+        self.wait()
+
+        self.bring_to_front(neighbourhood_target)
+        self.bring_to_back(blur3_mob, blur5_mob, blur7_mob)
+
+        self.play(FadeTransform(img_mob, blur3_mob))
+
+        self.wait()
+
+        self.play(
+            neighbourhood_target.animate.scale_to_fit_width(img_mob[0:5].width),
+            FadeTransform(blur3_mob, blur5_mob),
+        )
+
+        self.wait()
+
+        self.play(
+            neighbourhood_target.animate.scale_to_fit_width(img_mob[0:7].width),
+            FadeTransform(blur5_mob, blur7_mob),
+        )
+
+        self.wait()
+
+
+class Padding(MovingCameraScene):
+    def construct(self):
+        np.random.seed(12)
+        frame = self.camera.frame
+
+        dims = 15
+        img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        constant_padded_array = np.pad(img_array, ((1, 1), (1, 1)), mode="constant")
+        edge_padded_array = np.pad(img_array, ((1, 1), (1, 1)), mode="edge")
+        wrap_padded_array = np.pad(img_array, ((1, 1), (1, 1)), mode="wrap")
+
+        img_mob = PixelArray(
+            img_array, outline=False, include_numbers=True, fit_to_frame=False
+        )
+
+        const_padded_mob = PixelArray(
+            constant_padded_array,
+            outline=False,
+            include_numbers=True,
+            fit_to_frame=False,
+        )
+
+        edge_pad_mob = PixelArray(
+            edge_padded_array,
+            outline=False,
+            include_numbers=True,
+            fit_to_frame=False,
+        )
+
+        wrap_pad_mob = PixelArray(
+            wrap_padded_array,
+            outline=False,
+            include_numbers=True,
+            fit_to_frame=False,
+        )
+
+        [p.pixel.set_color(DB_DARK_GREEN) for p in const_padded_mob]
+        [p.number.set_color(DB_LIGHT_GREEN) for p in const_padded_mob]
+
+        [p.pixel.set_color(DB_DARK_GREEN) for p in edge_pad_mob]
+        [p.number.set_color(DB_LIGHT_GREEN) for p in edge_pad_mob]
+
+        [p.pixel.set_color(DB_DARK_GREEN) for p in wrap_pad_mob]
+        [p.number.set_color(DB_LIGHT_GREEN) for p in wrap_pad_mob]
+
+        self.play(FadeIn(img_mob))
+
+        self.wait()
+
+        self.play(focus_on(frame, img_mob[0:10], buff=6))
+
+        const_title = DBTitle("Constant padding", weight=BOLD).next_to(
+            const_padded_mob, UP, aligned_edge=LEFT, buff=1
+        )
+        edge_title = DBTitle("Edge padding", weight=BOLD).next_to(
+            const_padded_mob, UP, aligned_edge=LEFT, buff=1
+        )
+        wrap_title = DBTitle("Wrap padding", weight=BOLD).next_to(
+            const_padded_mob, UP, aligned_edge=LEFT, buff=1
+        )
+
+        self.bring_to_back(const_padded_mob)
+
+        self.play(FadeIn(const_padded_mob), FadeIn(const_title, shift=UP * 0.3))
+
+        self.wait()
+
+        self.play(
+            Transform(const_padded_mob, edge_pad_mob),
+            FadeOut(const_title, shift=UP * 0.3),
+            FadeIn(edge_title, shift=UP * 0.3),
+        )
+
+        self.wait()
+
+        self.play(
+            Transform(const_padded_mob, wrap_pad_mob),
+            FadeOut(edge_title, shift=UP * 0.3),
+            FadeIn(wrap_title, shift=UP * 0.3),
+            focus_on(frame, const_padded_mob),
+        )
+
+        self.wait()
+
+
+class GaussianFilterExample(MovingCameraScene):
+    def construct(self):
+
+        np.random.seed(12)
+        frame = self.camera.frame
+
+        dims = 15
+        img_array = np.zeros((dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        img_mob = PixelArray(img_array, outline=False, include_numbers=True)
+
+        self.play(FadeIn(img_mob))
+        self.wait()
+
+        gauss_filtered = convolve(img_array, get_gaussian_kernel(3))
+        box_filtered = convolve(img_array, get_blur_kernel(3))
+        gauss_filtered_mob = PixelArray(gauss_filtered, include_numbers=True)
+        box_filtered_mob = PixelArray(box_filtered, include_numbers=True).next_to(
+            gauss_filtered_mob, RIGHT
+        )
+        gauss_title = (
+            DBTitle("Gaussian Blur").next_to(gauss_filtered_mob, UP).scale(0.8)
+        )
+        box_title = DBTitle("Box Blur").next_to(box_filtered_mob, UP).scale(0.8)
+
+        self.play(
+            LaggedStart(
+                *[FadeTransform(i, b) for i, b in zip(img_mob, gauss_filtered_mob)],
+                lag_ratio=0.005,
+            ),
+            run_time=3,
+        )
+        self.wait()
+
+        self.play(
+            focus_on(
+                frame, [gauss_filtered_mob, box_filtered_mob, gauss_title, box_title]
+            ),
+            FadeIn(box_filtered_mob),
+            FadeIn(gauss_title, box_title, shift=UP * 0.3),
+            run_time=2,
+        )
