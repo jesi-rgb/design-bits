@@ -466,7 +466,7 @@ class Padding(MovingCameraScene):
         np.random.seed(12)
         frame = self.camera.frame
 
-        dims = 15
+        dims = 11
         img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
         img_array[:, dims // 2] = 255
         img_array[dims // 2, :] = 255
@@ -511,17 +511,16 @@ class Padding(MovingCameraScene):
 
         self.play(FadeIn(img_mob))
 
-        self.wait()
-
         self.play(focus_on(frame, img_mob[0:10], buff=6))
+        self.wait(2)
 
-        const_title = DBTitle("Constant padding", weight=BOLD).next_to(
+        const_title = DBTitle("Constant padding", weight=ULTRABOLD).next_to(
             const_padded_mob, UP, aligned_edge=LEFT, buff=1
         )
-        edge_title = DBTitle("Edge padding", weight=BOLD).next_to(
+        edge_title = DBTitle("Edge padding", weight=ULTRABOLD).next_to(
             const_padded_mob, UP, aligned_edge=LEFT, buff=1
         )
-        wrap_title = DBTitle("Wrap padding", weight=BOLD).next_to(
+        wrap_title = DBTitle("Wrap padding", weight=ULTRABOLD).next_to(
             const_padded_mob, UP, aligned_edge=LEFT, buff=1
         )
 
@@ -543,10 +542,12 @@ class Padding(MovingCameraScene):
             Transform(const_padded_mob, wrap_pad_mob),
             FadeOut(edge_title, shift=UP * 0.3),
             FadeIn(wrap_title, shift=UP * 0.3),
-            focus_on(frame, const_padded_mob),
         )
 
         self.wait()
+        self.play(
+            focus_on(frame, const_padded_mob),
+        )
 
 
 class GaussianFilterExample(MovingCameraScene):
