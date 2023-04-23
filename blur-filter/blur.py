@@ -353,9 +353,10 @@ class BoxFilterExample(MovingCameraScene):
 
         line.next_to(division, DOWN, aligned_edge=RIGHT, buff=0.1)
 
+        all_n_avg_round = int(np.around(all_n_sum / 9))
         all_n_avg = (
             Text(
-                str(all_n_sum // 9),
+                str(all_n_avg_round),
                 font=DB_MONO,
                 weight=SEMIBOLD,
             )
@@ -367,7 +368,7 @@ class BoxFilterExample(MovingCameraScene):
 
         self.wait()
 
-        self.play(img_mob.update_index((dims // 2, dims // 2), all_n_sum // 9))
+        self.play(img_mob.update_index((dims // 2, dims // 2), all_n_avg_round))
 
         blurred_array = convolve(img_array, get_blur_kernel(3))
         blur_mob = PixelArray(blurred_array, include_numbers=True)
