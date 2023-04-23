@@ -1,13 +1,14 @@
 import sys
 
+sys.path.insert(1, "utils/")
+
 from numpy.lib.stride_tricks import sliding_window_view
 
-sys.path.insert(1, "utils/")
 
 from manim import *
 from utils import PixelArray, focus_on
 from design_bits_system import *
-from blur_utils import convolve_mob, get_blur_kernel, get_gaussian_kernel
+from blur_utils import convolve, get_blur_kernel, get_gaussian_kernel
 
 config.background_color = DB_BLACK
 
@@ -233,8 +234,9 @@ class BoxFilterExample(MovingCameraScene):
         frame = self.camera.frame
 
         dims = 15
-        img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
+        img_array = np.zeros((dims, dims), dtype=np.uint8)
         img_array[:, dims // 2] = 127
+        img_array[dims // 2, :] = 127
 
         img_mob = PixelArray(img_array, outline=False, include_numbers=True)
 
@@ -288,16 +290,18 @@ class BoxFilterExample(MovingCameraScene):
 
         all_numbers = (
             VGroup(*[img_mob[n].number.copy() for n in neighbours])
+            .set_color(WHITE)
             .arrange(DOWN, aligned_edge=RIGHT, buff=0.1)
             .next_to(img_mob, RIGHT, buff=1)
+            .shift(UP * 0.2)
         )
         line = (
             Line(LEFT * 0.9, ORIGIN)
             .set_stroke(width=0.9, color=DB_LIGHT_GREEN)
-            .next_to(all_numbers, DOWN, aligned_edge=RIGHT, buff=-0.1)
+            .next_to(all_numbers, DOWN, aligned_edge=RIGHT, buff=0.1)
         )
         plus_sign = (
-            Text("+", font=DB_FONT)
+            Text("+", font=DB_MONO)
             .scale(0.3)
             .next_to(line, UP, aligned_edge=LEFT, buff=0.1)
         )
@@ -313,20 +317,22 @@ class BoxFilterExample(MovingCameraScene):
             .next_to(line, DOWN, buff=0.1, aligned_edge=RIGHT)
         )
 
-        self.play(LaggedStartMap(FadeIn, all_numbers))
+        self.play(*[FadeIn(n) for n in all_numbers])
 
         self.wait()
 
         self.play(
             LaggedStart(
-                Write(line), Write(plus_sign), FadeIn(all_n_sum_mob), lag_ratio=0.3
+                Write(line), Write(plus_sign), FadeIn(all_n_sum_mob), lag_ratio=0.1
             )
         )
 
         self.wait()
 
         self.play(
-            LaggedStartMap(FadeOut, [line, plus_sign, *all_numbers]),
+            LaggedStartMap(FadeOut, all_numbers),
+            FadeOut(line, shift=LEFT * 0.3),
+            FadeOut(plus_sign),
         )
 
         self.play(
@@ -349,7 +355,7 @@ class BoxFilterExample(MovingCameraScene):
 
         all_n_avg = (
             Text(
-                str(np.ceil(all_n_sum / 9)),
+                str(all_n_sum // 9),
                 font=DB_MONO,
                 weight=SEMIBOLD,
             )
@@ -363,7 +369,7 @@ class BoxFilterExample(MovingCameraScene):
 
         self.play(img_mob.update_index((dims // 2, dims // 2), all_n_sum // 9))
 
-        blurred_array = convolve_mob(img_array, get_blur_kernel(3))
+        blurred_array = convolve(img_array, get_blur_kernel(3))
         blur_mob = PixelArray(blurred_array, include_numbers=True)
 
         self.wait()

@@ -3,10 +3,8 @@ import scipy.stats as st
 from manim import *
 import cv2 as cv
 
-from utils import PixelArray
 
-
-def convolve_mob(img: np.ndarray, kernel: np.ndarray) -> PixelArray:
+def convolve(img: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     return cv.filter2D(img, -1, kernel)
 
 
