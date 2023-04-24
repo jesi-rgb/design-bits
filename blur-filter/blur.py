@@ -229,7 +229,6 @@ class CompareKernels(MovingCameraScene):
 
 class BoxFilterExample(MovingCameraScene):
     def construct(self):
-
         np.random.seed(12)
         frame = self.camera.frame
 
@@ -549,12 +548,83 @@ class Padding(MovingCameraScene):
             focus_on(frame, const_padded_mob),
         )
 
+        arrows_down = VGroup(
+            *[
+                CurvedArrow(
+                    img_mob[0, i].get_center(),
+                    wrap_pad_mob[dims + 1, i + 1].get_center(),
+                )
+                .set_color(DB_YELLOW)
+                .set_stroke(width=10)
+                for i in range(4)
+            ]
+        )
+        arrows_up = VGroup(
+            *[
+                CurvedArrow(
+                    img_mob[dims - 1, i].get_center(),
+                    wrap_pad_mob[0, i + 1].get_center(),
+                    angle=-TAU / 4,
+                )
+                .set_color(DB_YELLOW)
+                .set_stroke(width=10)
+                for i in range(4)
+            ]
+        )
+        self.play(LaggedStartMap(FadeIn, arrows_down))
+
+        self.wait()
+        self.play(FadeOut(arrows_down))
+
+        self.wait()
+        self.play(LaggedStartMap(FadeIn, arrows_up))
+
+        self.wait()
+        self.play(FadeOut(arrows_up))
+
 
 class GaussianFilterExample(MovingCameraScene):
     def construct(self):
-
         np.random.seed(12)
         frame = self.camera.frame
+
+        box_kernel = get_blur_kernel(5) * 255
+        gauss_kernel = get_gaussian_kernel(5) * 255
+        box_kern_mob = PixelArray(box_kernel, normalize=True, include_numbers=True)
+        gauss_kern_mob = PixelArray(
+            gauss_kernel, normalize=True, include_numbers=True
+        ).next_to(box_kern_mob, RIGHT)
+
+        center_box = (
+            Square()
+            .set_color(DB_LIGHT_GREEN)
+            .scale_to_fit_width(box_kern_mob[0].width)
+            .move_to(box_kern_mob)
+        )
+        center_gauss = (
+            Square()
+            .set_color(DB_LIGHT_GREEN)
+            .scale_to_fit_width(box_kern_mob[0].width)
+            .move_to(gauss_kern_mob)
+        )
+        box_title = DBTitle("Box filter").next_to(box_kern_mob, UP)
+        gauss_title = DBTitle("Gaussian filter").next_to(gauss_kern_mob, UP)
+
+        self.play(LaggedStartMap(FadeIn, [box_kern_mob]), FadeIn(center_box))
+        self.wait()
+        self.play(
+            focus_on(
+                frame, [box_kern_mob, gauss_kern_mob, box_title, gauss_title], buff=3
+            ),
+            FadeIn(gauss_kern_mob, center_gauss),
+        )
+        self.play(FadeIn(box_title, gauss_title, shift=UP * 0.3))
+
+        self.wait(2)
+        self.play(FadeOut(box_kern_mob, gauss_kern_mob, center_gauss, center_box))
+        self.wait()
+
+        # ---
 
         dims = 15
         img_array = np.zeros((dims, dims), dtype=np.uint8)
@@ -591,6 +661,8 @@ class GaussianFilterExample(MovingCameraScene):
                 frame, [gauss_filtered_mob, box_filtered_mob, gauss_title, box_title]
             ),
             FadeIn(box_filtered_mob),
-            FadeIn(gauss_title, box_title, shift=UP * 0.3),
             run_time=2,
+        )
+        self.play(
+            FadeIn(gauss_title, box_title, shift=UP * 0.3),
         )
