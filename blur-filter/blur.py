@@ -1,11 +1,13 @@
 import sys
 
+
 sys.path.insert(1, "utils/")
 
 from numpy.lib.stride_tricks import sliding_window_view
-
+import cv2 as cv
 
 from manim import *
+from PIL import Image
 from utils import DBTitle, PixelArray, focus_on
 from design_bits_system import *
 from blur_utils import convolve, get_blur_kernel, get_gaussian_kernel
@@ -697,16 +699,58 @@ class GaussianFilterExample(MovingCameraScene):
 
 class Perspective(MovingCameraScene):
     def construct(self):
-        small_img = ImageMobject("assets/small_logo.png")
+        scaling_factor = 0.04
+        small_img = ImageMobject(
+            "assets/small_logo.png", scale_to_resolution=config.frame_height
+        ).scale(scaling_factor)
+
         small_img.set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+
+        small_img_array = np.asarray(Image.open("assets/small_logo.png"))
+        small_img_blurred = convolve(small_img_array, get_gaussian_kernel(5))
+
+        small_img_blurred_mob = ImageMobject(
+            small_img_blurred, scale_to_resolution=config.frame_height
+        ).scale(scaling_factor)
 
         kernel = get_gaussian_kernel(5) * 255
         kernel_mob = PixelArray(
-            kernel, include_numbers=True, normalize=True, fit_to_frame=False
-        ).scale(0.01 * 5)
+            kernel,
+            include_numbers=False,
+            normalize=True,
+            fit_to_frame=False,
+            outline=False,
+        ).set_color(DB_YELLOW)
 
-        # TODO: find a way to make the kernel pixel size match
-        # with the image's pixel size
+        self.play(FadeIn(small_img))
 
-        self.play(FadeIn(small_img, kernel_mob))
-        self.play(small_img.animate.scale(10))
+        self.wait()
+
+        self.play(FadeIn(kernel_mob))
+
+        self.wait()
+
+        self.play(
+            kernel_mob.animate.scale(scaling_factor).move_to(small_img, aligned_edge=UL)
+        )
+
+        counter = 0
+
+        kernel_width = kernel_mob.width
+        kernel_height = kernel_mob.height
+
+        for j in range(int(small_img.width // kernel_width) + 1):
+            for i in range(int(small_img.height // kernel_height) + 1):
+                counter += 1
+
+                self.play(
+                    kernel_mob.animate.move_to(small_img, aligned_edge=UL).shift(
+                        kernel_width * i * RIGHT + kernel_height * j * DOWN
+                    ),
+                    run_time=1 / (counter * 2 + 1),
+                )
+
+        print(counter * 5)
+
+        self.wait()
+        self.play(FadeTransform(small_img, small_img_blurred_mob))
