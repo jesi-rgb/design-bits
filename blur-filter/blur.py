@@ -621,7 +621,32 @@ class GaussianFilterExample(MovingCameraScene):
         self.play(FadeIn(box_title, gauss_title, shift=UP * 0.3))
 
         self.wait(2)
-        self.play(FadeOut(box_kern_mob, gauss_kern_mob, center_gauss, center_box))
+        self.play(
+            FadeOut(
+                box_kern_mob,
+                gauss_kern_mob,
+                center_gauss,
+                center_box,
+                gauss_title,
+                box_title,
+            )
+        )
+        self.wait()
+
+        axes = Axes(x_range=[-5, 5, 1], y_range=[0, 0.5, 0.1], x_length=5, y_length=2)
+
+        gaussian = lambda x: (1 / (1 * np.sqrt(2 * np.pi))) * np.exp(
+            -0.5 * ((x - 0) / 1) ** 2
+        )
+        gauss_curve = axes.plot(gaussian).set_color(DB_LIGHT_GREEN)
+        gauss_title = DBTitle("Gaussian Curve").scale(0.6).next_to(gauss_curve, DOWN)
+
+        self.play(
+            focus_on(frame, [gauss_curve, gauss_title]),
+        )
+        self.play(Write(gauss_curve), FadeIn(gauss_title, shift=UP * 0.3), run_time=2)
+        self.wait()
+        self.play(FadeOut(gauss_title, gauss_curve))
         self.wait()
 
         # ---
@@ -633,6 +658,7 @@ class GaussianFilterExample(MovingCameraScene):
 
         img_mob = PixelArray(img_array, outline=False, include_numbers=True)
 
+        self.play(focus_on(frame, img_mob))
         self.play(FadeIn(img_mob))
         self.wait()
 
@@ -663,6 +689,24 @@ class GaussianFilterExample(MovingCameraScene):
             FadeIn(box_filtered_mob),
             run_time=2,
         )
+
         self.play(
             FadeIn(gauss_title, box_title, shift=UP * 0.3),
         )
+
+
+class Perspective(MovingCameraScene):
+    def construct(self):
+        small_img = ImageMobject("assets/small_logo.png")
+        small_img.set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+
+        kernel = get_gaussian_kernel(5) * 255
+        kernel_mob = PixelArray(
+            kernel, include_numbers=True, normalize=True, fit_to_frame=False
+        ).scale(0.01 * 5)
+
+        # TODO: find a way to make the kernel pixel size match
+        # with the image's pixel size
+
+        self.play(FadeIn(small_img, kernel_mob))
+        self.play(small_img.animate.scale(10))

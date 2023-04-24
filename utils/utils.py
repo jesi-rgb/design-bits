@@ -51,6 +51,7 @@ class Pixel(VGroup):
         assert color_mode in ("RGB", "GRAY"), "Color modes are RGB and GRAY"
 
         if color_mode == "RGB":
+            print(n)
             if not isinstance(n, Iterable):
                 raise TypeError(
                     "The value passed for Pixel in RGB was not an array of R, G and B values. Make sure the input image has shape m x n x 3 or change the mode to GRAY"
