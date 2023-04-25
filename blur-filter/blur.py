@@ -1,9 +1,12 @@
 import sys
 
+from numpy.ma import right_shift
+
 
 sys.path.insert(1, "utils/")
 
 from numpy.lib.stride_tricks import sliding_window_view
+from scipy.ndimage import maximum_filter, minimum_filter
 import cv2 as cv
 
 from manim import *
@@ -854,3 +857,34 @@ class MedianFilterExample(MovingCameraScene):
                 lag_ratio=0.025,
             ),
         )
+
+
+class MinMaxFilters(MovingCameraScene):
+    def construct(self):
+        frame = self.camera.frame
+
+        dims = 7
+        img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        img_mob = PixelArray(img_array, include_numbers=True)
+
+        max_filter_mob = PixelArray(
+            maximum_filter(img_array, 3), include_numbers=True
+        ).next_to(img_mob, RIGHT)
+
+        min_filter_mob = PixelArray(
+            minimum_filter(img_array, 3), include_numbers=True
+        ).next_to(max_filter_mob, RIGHT)
+
+        img_title = DBTitle("Original").next_to(img_mob, UP)
+        min_title = DBTitle("Maximum filter").next_to(max_filter_mob, UP)
+        max_title = DBTitle("Minimum filter").next_to(min_filter_mob, UP)
+
+        self.play(
+            FadeIn(img_mob, max_filter_mob, min_filter_mob, shift=UP * 0.3),
+            focus_on(frame, [img_mob, min_filter_mob]),
+        )
+        self.play(FadeIn(img_title, min_title, max_title, shift=UP * 0.3))
+        self.wait()
