@@ -851,6 +851,6 @@ class MedianFilterExample(MovingCameraScene):
         self.play(
             LaggedStart(
                 *[FadeTransform(m, t) for m, t in zip(img_mob, img_median_blur_mob)],
-                lag_ratio=0.01,
+                lag_ratio=0.025,
             ),
         )
