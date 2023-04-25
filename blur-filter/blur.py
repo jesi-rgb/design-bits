@@ -754,3 +754,103 @@ class Perspective(MovingCameraScene):
 
         self.wait()
         self.play(FadeTransform(small_img, small_img_blurred_mob))
+
+
+class MedianFilterExample(MovingCameraScene):
+    def construct(self):
+        frame = self.camera.frame
+        np.random.seed(12)
+
+        dims = 7
+        img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        img_array_median_blur = cv.medianBlur(img_array, ksize=3)
+
+        img_mob = PixelArray(img_array, include_numbers=True)
+
+        self.play(FadeIn(img_mob, shift=UP * 0.3))
+        self.wait()
+
+        def neighbours(x, y):
+            return [
+                (x, y),
+                (x - 1, y - 1),
+                (x, y - 1),
+                (x + 1, y - 1),
+                (x + 1, y),
+                (x + 1, y + 1),
+                (x, y + 1),
+                (x - 1, y + 1),
+                (x - 1, y),
+            ]
+
+        pos_x, pos_y = 1, 1
+        all_numbers = [img_array[n] for n in neighbours(pos_x, pos_y)]
+        all_numbers_sorted = sorted(all_numbers)
+
+        all_numbers_mob = (
+            VGroup(
+                *[
+                    Text(str(n), font=DB_MONO, weight=SEMIBOLD)
+                    .scale(0.6)
+                    .set_color(WHITE)
+                    for n in all_numbers
+                ]
+            )
+            .arrange(DOWN, aligned_edge=RIGHT)
+            .next_to(img_mob, RIGHT, buff=1)
+        )
+
+        all_numbers_sorted_mob = (
+            VGroup(
+                *[
+                    Text(str(n), font=DB_MONO, weight=SEMIBOLD)
+                    .scale(0.6)
+                    .set_color(WHITE)
+                    for n in all_numbers_sorted
+                ]
+            )
+            .arrange(DOWN, aligned_edge=RIGHT)
+            .next_to(img_mob, RIGHT, buff=1)
+        )
+
+        target_pixel_surr = SurroundingRectangle(
+            img_mob[pos_x, pos_y], buff=0
+        ).set_color(DB_LIGHT_GREEN)
+
+        self.play(
+            Write(target_pixel_surr),
+            FadeIn(all_numbers_mob),
+            focus_on(frame, [img_mob, all_numbers_mob]),
+        )
+
+        self.wait()
+
+        self.play(FadeTransform(all_numbers_mob, all_numbers_sorted_mob, path_arc=PI))
+        self.wait()
+
+        median_value = all_numbers_sorted_mob[len(all_numbers_sorted_mob) // 2].text
+        median_value_surr = SurroundingRectangle(
+            all_numbers_sorted_mob[len(all_numbers_sorted_mob) // 2]
+        ).set_color(DB_LIGHT_GREEN)
+
+        self.play(Write(median_value_surr))
+        self.wait()
+        self.play(
+            img_mob.update_index(
+                (pos_x, pos_y),
+                int(median_value),
+            )
+        )
+        self.wait()
+
+        img_median_blur_mob = PixelArray(img_array_median_blur, include_numbers=True)
+
+        self.play(
+            LaggedStart(
+                *[FadeTransform(m, t) for m, t in zip(img_mob, img_median_blur_mob)],
+                lag_ratio=0.01,
+            ),
+        )
