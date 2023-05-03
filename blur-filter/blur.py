@@ -532,7 +532,7 @@ class Padding(MovingCameraScene):
 
         self.play(FadeIn(const_padded_mob), FadeIn(const_title, shift=UP * 0.3))
 
-        self.wait()
+        self.wait(2)
 
         self.play(
             Transform(const_padded_mob, edge_pad_mob),
@@ -540,7 +540,7 @@ class Padding(MovingCameraScene):
             FadeIn(edge_title, shift=UP * 0.3),
         )
 
-        self.wait()
+        self.wait(2)
 
         self.play(
             Transform(const_padded_mob, wrap_pad_mob),
@@ -548,7 +548,8 @@ class Padding(MovingCameraScene):
             FadeIn(wrap_title, shift=UP * 0.3),
         )
 
-        self.wait()
+        self.wait(2)
+
         self.play(
             focus_on(frame, const_padded_mob),
         )
@@ -578,13 +579,13 @@ class Padding(MovingCameraScene):
         )
         self.play(LaggedStartMap(FadeIn, arrows_down))
 
-        self.wait()
+        self.wait(2)
         self.play(FadeOut(arrows_down))
 
-        self.wait()
+        self.wait(2)
         self.play(LaggedStartMap(FadeIn, arrows_up))
 
-        self.wait()
+        self.wait(2)
         self.play(FadeOut(arrows_up))
 
 
@@ -622,6 +623,7 @@ class GaussianFilterExample(MovingCameraScene):
                 frame, [box_kern_mob, gauss_kern_mob, box_title, gauss_title], buff=3
             ),
             FadeIn(gauss_kern_mob, center_gauss),
+            run_time=3,
         )
         self.play(FadeIn(box_title, gauss_title, shift=UP * 0.3))
 
@@ -644,7 +646,9 @@ class GaussianFilterExample(MovingCameraScene):
             -0.5 * ((x - 0) / 1) ** 2
         )
         gauss_curve = axes.plot(gaussian).set_color(DB_LIGHT_GREEN)
-        gauss_title = DBTitle("Gaussian Curve").scale(0.6).next_to(gauss_curve, DOWN)
+        gauss_title = (
+            DBTitle("Gaussian Curve", weight=BOLD).scale(0.6).next_to(gauss_curve, DOWN)
+        )
 
         self.play(
             focus_on(frame, [gauss_curve, gauss_title]),
@@ -692,12 +696,13 @@ class GaussianFilterExample(MovingCameraScene):
                 frame, [gauss_filtered_mob, box_filtered_mob, gauss_title, box_title]
             ),
             FadeIn(box_filtered_mob),
-            run_time=2,
+            run_time=3,
         )
 
         self.play(
             FadeIn(gauss_title, box_title, shift=UP * 0.3),
         )
+        self.wait()
 
 
 class Perspective(MovingCameraScene):
@@ -888,3 +893,10 @@ class MinMaxFilters(MovingCameraScene):
         )
         self.play(FadeIn(img_title, min_title, max_title, shift=UP * 0.3))
         self.wait()
+
+
+class Test(Scene):
+    def construct(self):
+        a = Text("0", font="PT Mono", weight=BOLD)
+
+        self.add(a)

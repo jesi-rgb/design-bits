@@ -78,10 +78,9 @@ class Pixel(VGroup):
 
         if include_numbers:
             self.number = (
-                Text(number_string, font=DB_MONO, weight=SEMIBOLD)
+                Text(number_string, font=DB_MONO, weight=BOLD)
                 .scale(0.7)
                 .set_color(g2h(1) if abs(n) < 170 else g2h(0))
-                .set_stroke(opacity=1 if include_numbers else 0)
             )
 
             if normalize:
