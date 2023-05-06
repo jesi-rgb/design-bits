@@ -12,6 +12,10 @@ def get_blur_kernel(shape: int = 3) -> np.ndarray:
     return np.ones((shape, shape)) * (1 / (shape**2))
 
 
+def get_sharpen_kernel():
+    return np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+
+
 def get_gaussian_kernel(size=3, sig=1):
     """Returns a 2D Gaussian kernel."""
 

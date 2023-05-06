@@ -1,8 +1,5 @@
 import sys
 
-from numpy.ma import right_shift
-
-
 sys.path.insert(1, "utils/")
 
 from numpy.lib.stride_tricks import sliding_window_view
@@ -13,7 +10,12 @@ from manim import *
 from PIL import Image
 from utils import DBTitle, PixelArray, focus_on
 from design_bits_system import *
-from blur_utils import convolve, get_blur_kernel, get_gaussian_kernel
+from blur_utils import (
+    convolve,
+    get_blur_kernel,
+    get_gaussian_kernel,
+    get_sharpen_kernel,
+)
 
 config.background_color = DB_BLACK
 
@@ -776,10 +778,10 @@ class MedianFilterExample(MovingCameraScene):
 
         img_array_median_blur = cv.medianBlur(img_array, ksize=3)
 
-        img_mob = PixelArray(img_array, include_numbers=True)
+        img_mob = PixelArray(img_array, include_numbers=True, outline=False)
 
         self.play(FadeIn(img_mob, shift=UP * 0.3))
-        self.wait()
+        self.wait(2)
 
         def neighbours(x, y):
             return [
@@ -832,12 +834,13 @@ class MedianFilterExample(MovingCameraScene):
             Write(target_pixel_surr),
             FadeIn(all_numbers_mob),
             focus_on(frame, [img_mob, all_numbers_mob]),
+            run_time=2,
         )
 
-        self.wait()
+        self.wait(2)
 
         self.play(FadeTransform(all_numbers_mob, all_numbers_sorted_mob, path_arc=PI))
-        self.wait()
+        self.wait(2)
 
         median_value = all_numbers_sorted_mob[len(all_numbers_sorted_mob) // 2].text
         median_value_surr = SurroundingRectangle(
@@ -852,9 +855,11 @@ class MedianFilterExample(MovingCameraScene):
                 int(median_value),
             )
         )
-        self.wait()
+        self.wait(2)
 
-        img_median_blur_mob = PixelArray(img_array_median_blur, include_numbers=True)
+        img_median_blur_mob = PixelArray(
+            img_array_median_blur, include_numbers=True, outline=False
+        )
 
         self.play(
             LaggedStart(
@@ -875,24 +880,60 @@ class MinMaxFilters(MovingCameraScene):
 
         img_mob = PixelArray(img_array, include_numbers=True)
 
-        max_filter_mob = PixelArray(
-            maximum_filter(img_array, 3), include_numbers=True
-        ).next_to(img_mob, RIGHT)
-
         min_filter_mob = PixelArray(
             minimum_filter(img_array, 3), include_numbers=True
-        ).next_to(max_filter_mob, RIGHT)
+        ).next_to(img_mob, RIGHT)
+
+        max_filter_mob = PixelArray(
+            maximum_filter(img_array, 3), include_numbers=True
+        ).next_to(min_filter_mob, RIGHT)
 
         img_title = DBTitle("Original").next_to(img_mob, UP)
-        min_title = DBTitle("Maximum filter").next_to(max_filter_mob, UP)
-        max_title = DBTitle("Minimum filter").next_to(min_filter_mob, UP)
+        min_title = DBTitle("Minimum filter").next_to(min_filter_mob, UP)
+        max_title = DBTitle("Maximum filter").next_to(max_filter_mob, UP)
 
         self.play(
-            FadeIn(img_mob, max_filter_mob, min_filter_mob, shift=UP * 0.3),
-            focus_on(frame, [img_mob, min_filter_mob]),
+            focus_on(frame, [img_mob, max_filter_mob]),
         )
-        self.play(FadeIn(img_title, min_title, max_title, shift=UP * 0.3))
-        self.wait()
+
+        self.play(FadeIn(img_mob, shift=UP * 0.3), FadeIn(img_title, shift=UP * 0.3))
+
+        self.wait(2)
+
+        self.play(
+            FadeIn(min_filter_mob, shift=UP * 0.3), FadeIn(min_title, shift=UP * 0.3)
+        )
+
+        self.wait(2)
+
+        self.play(
+            FadeIn(max_filter_mob, shift=UP * 0.3), FadeIn(max_title, shift=UP * 0.3)
+        )
+
+        self.wait(2)
+
+
+class SharpenFilter(MovingCameraScene):
+    def construct(self):
+        frame = self.camera.frame
+
+        dims = 7
+        img_array = np.random.randint(10, 40, (dims, dims), dtype=np.uint8)
+        img_array[:, dims // 2] = 255
+        img_array[dims // 2, :] = 255
+
+        sharpen_kernel_array = get_sharpen_kernel()
+        sharpen_kernel_mob = VGroup(
+            *[
+                VGroup(
+                    Square().set_fill(DB_DARK_GREEN, opacity=1).set_stroke(width=0.3),
+                    Text(str(n), font=DB_MONO, weight=BOLD),
+                ).arrange(ORIGIN)
+                for n in sharpen_kernel_array.flatten()
+            ]
+        ).arrange_in_grid(rows=3, cols=3, buff=0)
+
+        self.play(FadeIn(sharpen_kernel_mob))
 
 
 class Test(Scene):
