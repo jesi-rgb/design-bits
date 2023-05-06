@@ -37,34 +37,32 @@ class Kernel(Scene):
 class Convolution(MovingCameraScene):
     def construct(self):
         frame = self.camera.frame
-        img_arr = np.array(
-            [
-                [0, 0, 255, 0, 0],
-                [0, 200, 255, 200, 0],
-                [0, 200, 255, 200, 0],
-                [0, 200, 255, 200, 0],
-                [0, 0, 255, 0, 0],
-            ]
-        )
+        dims = 11
+        img_arr = np.zeros((dims, dims), dtype=np.uint8)
+        img_arr[:, dims // 2] = 255
+        img_arr[dims // 2, :] = 255
 
         img_arr_pad = np.pad(img_arr, ((1, 1), (1, 1)), mode="constant")
 
         img_mob = PixelArray(
             img_arr,
-            include_numbers=True,
+            include_numbers=False,
             color_mode="GRAY",
             fit_to_frame=False,
-            normalize=True,
+            outline=False,
         )
 
         kernel = get_blur_kernel(3)
-        kernel_mob = PixelArray(
-            kernel,
-            color_mode="GRAY",
-            include_numbers=True,
-            fit_to_frame=False,
-            normalize=True,
-        ).next_to(img_mob, RIGHT)
+        kernel_mob = (
+            PixelArray(
+                kernel,
+                color_mode="GRAY",
+                include_numbers=False,
+                fit_to_frame=False,
+            )
+            .next_to(img_mob, RIGHT)
+            .set_color(DB_LIGHT_GREEN)
+        )
 
         kernel_center_mob = (
             SurroundingRectangle(kernel_mob[0])
@@ -87,14 +85,17 @@ class Convolution(MovingCameraScene):
 
         self.wait()
 
-        new_arr = np.zeros(img_mob.shape)
-        new_arr_mob = PixelArray(
-            new_arr,
-            color_mode="GRAY",
-            include_numbers=True,
-            fit_to_frame=False,
-            normalize=True,
-        ).next_to(img_mob, RIGHT, buff=2)
+        blurred_arr = convolve(img_arr, get_blur_kernel(3))
+        new_arr_mob = (
+            PixelArray(
+                blurred_arr,
+                color_mode="GRAY",
+                outline=False,
+                fit_to_frame=False,
+            )
+            .next_to(img_mob, RIGHT, buff=2)
+            .set_opacity(0)
+        )
 
         self.play(
             kernel_mob.animate.set_opacity(0.5),
@@ -104,29 +105,20 @@ class Convolution(MovingCameraScene):
         )
 
         sliding_windows = sliding_window_view(img_arr_pad, kernel_mob.shape)
+        count = 0
         for i in range(img_mob.shape[0]):
             for j in range(img_mob.shape[1]):
-                pad_section = sliding_windows[i, j]
-
-                new_val = np.sum(pad_section / 255 * kernel)
+                count = i + j
 
                 self.play(
                     kernel_mob.animate.move_to(img_mob[i, j]),
-                    new_arr_mob.update_index((i, j), new_val),
-                    run_time=1 / (i + 1),
+                    new_arr_mob[(i, j)].animate.set_opacity(1),
+                    run_time=1 / (count + 1),
                 )
 
         self.wait()
 
         self.play(FadeOut(kernel_mob), FadeOut(kernel_center_mob))
-
-        self.wait()
-        self.play(
-            *[p.number.animate.set_opacity(0) for p in img_mob],
-            *[p.number.animate.set_opacity(0) for p in new_arr_mob],
-            focus_on(frame, [img_mob, new_arr_mob], buff=390),
-            run_time=3,
-        )
 
         self.wait()
 
