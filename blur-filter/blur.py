@@ -1037,7 +1037,9 @@ class SharpenFilter(MovingCameraScene):
         sharpen_kernel_mob = VGroup(
             *[
                 VGroup(
-                    Square().set_fill(DB_DARK_GREEN, opacity=1).set_stroke(width=0.3),
+                    Square()
+                    .set_fill(DB_DARK_GREEN, opacity=1)
+                    .set_stroke(DB_LIGHT_GREEN, width=3.6),
                     Text(str(n), font=DB_MONO, weight=BOLD),
                 ).arrange(ORIGIN)
                 for n in sharpen_kernel_array.flatten()
