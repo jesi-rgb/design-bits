@@ -34,7 +34,7 @@ class Kernel(Scene):
         self.add(kernel_mob)
 
 
-class Convolution(MovingCameraScene):
+class ConvolutionSmallKernel(MovingCameraScene):
     def construct(self):
         frame = self.camera.frame
         dims = 11
@@ -52,7 +52,8 @@ class Convolution(MovingCameraScene):
             outline=False,
         )
 
-        kernel = get_blur_kernel(3)
+        kernel_size = 3
+        kernel = get_blur_kernel(kernel_size)
         kernel_mob = (
             PixelArray(
                 kernel,
@@ -85,7 +86,7 @@ class Convolution(MovingCameraScene):
 
         self.wait()
 
-        blurred_arr = convolve(img_arr, get_blur_kernel(3))
+        blurred_arr = convolve(img_arr, get_blur_kernel(kernel_size))
         new_arr_mob = (
             PixelArray(
                 blurred_arr,
@@ -97,23 +98,141 @@ class Convolution(MovingCameraScene):
             .set_opacity(0)
         )
 
+        count = 0
+
+        count_tracker = ValueTracker(0)
+        arrays = VGroup(img_mob, new_arr_mob)
+
+        def aw_counter():
+            return Text(
+                f"Operations: {(int(count_tracker.get_value()) + 1) * kernel_size ** 2}",
+                font=DB_MONO,
+                weight=BOLD,
+                t2f={"Operations:": DB_FONT},
+            ).next_to(arrays, DOWN, buff=1)
+
+        count_mob = always_redraw(aw_counter)
         self.play(
             kernel_mob.animate.set_opacity(0.5),
             FadeIn(new_arr_mob),
-            focus_on(frame, [img_mob, new_arr_mob], buff=2),
+            focus_on(frame, [img_mob, new_arr_mob, count_mob], buff=2),
             FadeIn(kernel_center_mob),
+            FadeIn(count_mob),
         )
 
-        sliding_windows = sliding_window_view(img_arr_pad, kernel_mob.shape)
-        count = 0
         for i in range(img_mob.shape[0]):
             for j in range(img_mob.shape[1]):
-                count = i + j
+                count += i + j
 
                 self.play(
+                    count_tracker.animate.set_value(count),
                     kernel_mob.animate.move_to(img_mob[i, j]),
                     new_arr_mob[(i, j)].animate.set_opacity(1),
-                    run_time=1 / (count + 1),
+                    run_time=1 / (count * 0.2 + 1),
+                )
+
+        self.wait()
+
+        self.play(FadeOut(kernel_mob), FadeOut(kernel_center_mob))
+
+        self.wait()
+
+
+class ConvolutionBigKernelDemo(MovingCameraScene):
+    def construct(self):
+        frame = self.camera.frame
+        dims = 11
+        img_arr = np.zeros((dims, dims), dtype=np.uint8)
+        img_arr[:, dims // 2] = 255
+        img_arr[dims // 2, :] = 255
+
+        img_arr_pad = np.pad(img_arr, ((1, 1), (1, 1)), mode="constant")
+
+        img_mob = PixelArray(
+            img_arr,
+            include_numbers=False,
+            color_mode="GRAY",
+            fit_to_frame=False,
+            outline=False,
+        )
+
+        kernel_size = 7
+        kernel = get_blur_kernel(kernel_size)
+        kernel_mob = (
+            PixelArray(
+                kernel,
+                color_mode="GRAY",
+                include_numbers=False,
+                fit_to_frame=False,
+            )
+            .next_to(img_mob, RIGHT)
+            .set_color(DB_LIGHT_GREEN)
+        )
+
+        kernel_center_mob = (
+            SurroundingRectangle(kernel_mob[0])
+            .set_color(DB_YELLOW)
+            .add_updater(lambda mob: mob.move_to(kernel_mob))
+        )
+
+        self.play(LaggedStartMap(FadeIn, img_mob))
+
+        self.play(focus_on(frame, [img_mob, kernel_mob]), FadeIn(kernel_mob))
+
+        self.wait()
+
+        aux_rect = Rectangle(width=kernel_mob.width, height=kernel_mob.height).move_to(
+            img_mob[0]
+        )
+        self.play(
+            kernel_mob.animate.move_to(img_mob[0]), focus_on(frame, [aux_rect, img_mob])
+        )
+
+        self.wait()
+
+        blurred_arr = convolve(img_arr, get_blur_kernel(kernel_size))
+        new_arr_mob = (
+            PixelArray(
+                blurred_arr,
+                color_mode="GRAY",
+                outline=False,
+                fit_to_frame=False,
+            )
+            .next_to(img_mob, RIGHT, buff=2)
+            .set_opacity(0)
+        )
+
+        count = 0
+
+        count_tracker = ValueTracker(0)
+        arrays = VGroup(img_mob, new_arr_mob)
+
+        def aw_counter():
+            return Text(
+                f"Operations: {(int(count_tracker.get_value()) + 1) * kernel_size ** 2}",
+                font=DB_MONO,
+                weight=BOLD,
+                t2f={"Operations:": DB_FONT},
+            ).next_to(arrays, DOWN, buff=1)
+
+        count_mob = always_redraw(aw_counter)
+
+        self.play(
+            kernel_mob.animate.set_opacity(0.5),
+            FadeIn(new_arr_mob),
+            focus_on(frame, [img_mob, new_arr_mob, count_mob], buff=2),
+            FadeIn(kernel_center_mob),
+            FadeIn(count_mob),
+        )
+        for i in range(img_mob.shape[0]):
+            for j in range(img_mob.shape[1]):
+                count += i + j
+
+                self.play(
+                    count_tracker.animate.set_value(count),
+                    kernel_mob.animate.move_to(img_mob[i, j]),
+                    new_arr_mob[(i, j)].animate.set_opacity(1),
+                    run_time=1 / (count * 0.2 + 1),
                 )
 
         self.wait()
