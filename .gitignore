@@ -1,3 +1,4 @@
 .DS_Store
 media
 __pycache__
+renders/
