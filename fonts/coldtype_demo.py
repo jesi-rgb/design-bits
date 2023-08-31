@@ -10,19 +10,11 @@ from coldtype.fx.skia import phototype, spackle
 from coldtype.fx.motion import filmjitter
 from coldtype.warping import warp
 
-supreme = Font.Cacheable("~/fonts/variable/Supreme-Variable.ttf")
-zodiak = Font.Cacheable("~/fonts/variable/Zodiak-Variable.ttf")
 
 text = "TYPOGRAPHY."
 chars = [c + " " * 6 for c in text]
 timeline = str.join("", chars)
 
-# timeline = """
-#
-# [T          ]
-# [Y       ]
-#
-# """
 
 at = AsciiTimeline(multiplier=16, fps=60, ascii=timeline).inflate()
 
@@ -110,20 +102,15 @@ def intro_typography(f):
                     ),
                 ),
             ),
-            StSt(
+            Glyphwise(
                 "TYPOGRAPHY",
-                Font.MutatorSans(),
-                fontSize=c.e(
-                    "seio",
-                    0,
-                    rng=(
-                        100 + abs(np.sin(c.i / 100)) * 100,
-                        200 + abs(np.sin(c.i / 100)) * 200,
-                    ),
+                lambda g: Style(
+                    Font.MutatorSans(),
+                    fontSize=400,
+                    wdth=f.adj(-g.i * 30).e("ceio", 1, rng=(0.2, 0.4)),
+                    wght=f.adj(g.i * 30).e("ceio", 1, rngh=(0.2, 0.4)),
+                    ro=1,
                 ),
-                wdth=-f.e("ceio", 1),
-                wght=f.e("ceio", 1),
-                ro=1,
             )
             .f(DB_LIGHT_GREEN)
             .ssw(DB_LIGHT_GREEN, 12)
@@ -150,12 +137,13 @@ def intro_typography(f):
                         f.a.r, cut=c.e("qeio", 0, rng=(100, 180)), blur=0.0, cutw=10
                     ),
                 ),
-            ),
+            )
+            .translate(0, -400),
             Glyphwise(
                 "MODERN",
                 lambda g: Style(
                     Font.MutatorSans(),
-                    300,
+                    500,
                     wdth=1,
                     wght=f.adj(-g.i * 17).e("qeio", 2, rng=(0, 1)),
                     fill=DB_LIGHT_GREEN,
@@ -168,7 +156,7 @@ def intro_typography(f):
                 "MODERN",
                 lambda g: Style(
                     Font.MutatorSans(),
-                    300,
+                    500,
                     wdth=1,
                     wght=f.adj(-g.i * 17).e("qeio", 2, rng=(0, 1)),
                     fill=DB_LIGHT_GREEN,
