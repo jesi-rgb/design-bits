@@ -7,22 +7,35 @@ from design_bits_system import *
 from coldtype import *
 from coldtype.fx.skia import phototype, spackle
 from coldtype.fx.motion import filmjitter
+from coldtype.warping import warp
 
-at = AsciiTimeline(
-    4,
-    60,
-    """
-                                <
-T      Y        P        O      G         R          A       P     H     Y        .""",
-).inflate()
+supreme = Font.Cacheable("~/fonts/variable/Supreme-Variable.ttf")
+
+text = "TYPOGRAPHY."
+chars = [c + " " * 6 for c in text]
+timeline = str.join("", chars)
+
+# timeline = """
+#
+# [T          ]
+# [Y       ]
+#
+# """
+
+at = AsciiTimeline(multiplier=16, fps=60, ascii=timeline).inflate()
 
 rs = random_series(seed=8)
 
+factor = 2
 
-@animation((1920 * 2, 1080 * 2), composites=1, timeline=at, bg=DB_BLACK, render_bg=1)
+
+@animation(
+    (1920 * factor, 1080 * factor), composites=1, timeline=at, bg=DB_BLACK, render_bg=1
+)
 def intro_typography(f):
 
     c = at.current()
+
     return PS(
         [
             P(f.a.r)
@@ -32,28 +45,103 @@ def intro_typography(f):
                     ys=0.15,
                     cut=64,
                     fill=Color.from_html(DB_BLACK),
-                    base=f.i * 2,
+                    base=f.i,
                 )
             )
             .ups()
-            .insert(0, P(f.a.r).f(1, 0.1))
-            .insert(
-                0, f.last_render(filmjitter(f.e("l"), speed=(30, 30), scale=(0.3, 0.4)))
+            .insert(0, f.last_render())
+            .layer(
+                lambda p: p.ch(
+                    warp(
+                        speed=9,
+                        ys=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                        xs=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                    )
+                ),
+                lambda p: p.ch(
+                    phototype(
+                        f.a.r, cut=c.e("qeio", 0, rng=(100, 280)), blur=0.0, cutw=10
+                    ),
+                ),
             )
             .append(
                 StSt(
                     c.name,
                     Font.MutatorSans(),
-                    fontSize=c.e("qeio", 0, rng=(100, 1200)),
+                    fontSize=c.e("qeio", 0, rng=(-2, 1700)),
                     wdth=c.e("qeio", 0),
-                    wght=rs[c.idx + 1] * 0.25,
+                    wght=c.e("ceio", 0),
                     ro=1,
                 )
-                .fssw(DB_BLACK, DB_LIGHT_GREEN, 12)
+                .f(DB_LIGHT_GREEN, c.e("seio", 0, rng=(0.1, 0.0)))
+                .ssw(DB_LIGHT_GREEN, 12)
                 .align(f.a.r, th=1, tv=1)
-                .blendmode(BlendMode.Xor)
+                .blendmode(BlendMode.ColorDodge)
             )
-            .ch(phototype(f.a.r, cut=110, blur=0.5, cutw=20))
+            .layer(
+                lambda p: p.ch(
+                    warp(
+                        speed=9,
+                        ys=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                        xs=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                    )
+                ),
+                lambda p: p.ch(
+                    phototype(
+                        f.a.r, cut=c.e("qeio", 0, rng=(100, 180)), blur=0.0, cutw=10
+                    ),
+                ),
+            ),
+            StSt(
+                "TYPOGRAPHY",
+                Font.MutatorSans(),
+                fontSize=f.e("ceio", 0, rng=(800, 0)),
+                wdth=f.e("ceio", 0),
+                wght=f.e("ceio", 0),
+                ro=1,
+            )
+            .f(DB_LIGHT_GREEN)
+            .ssw(DB_LIGHT_GREEN, 12)
+            .align(f.a.r, th=1, tv=1)
+            .blendmode(BlendMode.Xor)
+            .layer(
+                lambda p: p.ch(
+                    warp(
+                        speed=9,
+                        ys=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                        xs=c.e(
+                            "qeio",
+                            1,
+                            rng=(400, 800),
+                        ),
+                    )
+                ),
+                lambda p: p.ch(
+                    phototype(
+                        f.a.r, cut=c.e("qeio", 0, rng=(100, 180)), blur=0.0, cutw=10
+                    ),
+                ),
+            ),
         ]
     )
 
