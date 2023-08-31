@@ -2,6 +2,7 @@ import sys
 
 sys.path.insert(1, "utils/")
 
+import numpy as np
 from design_bits_system import *
 
 from coldtype import *
@@ -10,6 +11,7 @@ from coldtype.fx.motion import filmjitter
 from coldtype.warping import warp
 
 supreme = Font.Cacheable("~/fonts/variable/Supreme-Variable.ttf")
+zodiak = Font.Cacheable("~/fonts/variable/Zodiak-Variable.ttf")
 
 text = "TYPOGRAPHY."
 chars = [c + " " * 6 for c in text]
@@ -111,9 +113,16 @@ def intro_typography(f):
             StSt(
                 "TYPOGRAPHY",
                 Font.MutatorSans(),
-                fontSize=f.e("ceio", 0, rng=(800, 0)),
-                wdth=f.e("ceio", 0),
-                wght=f.e("ceio", 0),
+                fontSize=c.e(
+                    "seio",
+                    0,
+                    rng=(
+                        100 + abs(np.sin(c.i / 100)) * 100,
+                        200 + abs(np.sin(c.i / 100)) * 200,
+                    ),
+                ),
+                wdth=-f.e("ceio", 1),
+                wght=f.e("ceio", 1),
                 ro=1,
             )
             .f(DB_LIGHT_GREEN)
@@ -141,6 +150,37 @@ def intro_typography(f):
                         f.a.r, cut=c.e("qeio", 0, rng=(100, 180)), blur=0.0, cutw=10
                     ),
                 ),
+            ),
+            Glyphwise(
+                "MODERN",
+                lambda g: Style(
+                    Font.MutatorSans(),
+                    300,
+                    wdth=1,
+                    wght=f.adj(-g.i * 17).e("qeio", 2, rng=(0, 1)),
+                    fill=DB_LIGHT_GREEN,
+                ),
+            )
+            .align(f.a.r)
+            .translate(0, 400)
+            .layer(lambda p: p.ch(warp(speed=1)).removeOverlap().outline(1)),
+            Glyphwise(
+                "MODERN",
+                lambda g: Style(
+                    Font.MutatorSans(),
+                    300,
+                    wdth=1,
+                    wght=f.adj(-g.i * 17).e("qeio", 2, rng=(0, 1)),
+                    fill=DB_LIGHT_GREEN,
+                ),
+            )
+            .align(f.a.r)
+            .translate(0, 400)
+            .layer(
+                lambda p: p.ch(warp(speed=2))
+                .removeOverlap()
+                .outline(1)
+                .f(DB_LIGHT_GREEN, 0.4)
             ),
         ]
     )
