@@ -1,9 +1,7 @@
 import sys
-from coldtype.blender import BlenderTimeline
 
 sys.path.insert(1, "utils/")
 
-import numpy as np
 from design_bits_system import *
 
 from coldtype import *
@@ -27,20 +25,29 @@ at = AsciiTimeline(8, 60, timeline).inflate()
     (1920 * factor, 1080 * factor), composites=1, timeline=at, bg=DB_BLACK, render_bg=1
 )
 def wobbly_letter(f):
-
     c = at.current()
     return PS(
         [
             StSt(
-                "A", Font.MutatorSans(), wdth=1, font_size=400, fill=DB_LIGHT_GREEN
+                "B",
+                Font.MutatorSans(),
+                wdth=f.e("seio", 1),
+                font_size=800,
+                fill=DB_LIGHT_GREEN,
             ).align(f.a.r),
-            StSt("A", Font.MutatorSans(), wdth=1, font_size=400, fill=DB_LIGHT_GREEN)
+            StSt(
+                "B",
+                Font.MutatorSans(),
+                wdth=f.e("seio", 1),
+                font_size=800,
+                fill=DB_LIGHT_GREEN,
+            )
             .align(f.a.r)
             .removeOverlap()
             .outline(2)
             .ch(
                 warp(
-                    mult=4,
+                    mult=8,
                     speed=2,
                     ya=1 + f.i * 100,
                     xa=1 + f.i * 100,
