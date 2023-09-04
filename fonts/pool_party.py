@@ -11,7 +11,7 @@ from coldtype.warping import warp
 mona = Font.Cacheable("~/fonts/variable/Mona-Sans.ttf")
 ancho = Font.Cacheable("~/fonts/variable/AnchoGX.ttf")
 skia = Font.Cacheable("~/fonts/variable/Skia.ttf")
-kablammo = Font.Cacheable("~/fonts/variable/Kablammo.ttf")
+kablammo = Font.GoogleFont("Kablammo")
 
 factor = 1
 
