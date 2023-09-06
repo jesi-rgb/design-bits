@@ -27,7 +27,6 @@ factor = 2
     (1920 * factor, 1080 * factor), composites=1, timeline=at, bg=DB_BLACK, render_bg=1
 )
 def intro_typography(f):
-
     c = at.current()
 
     return PS(
