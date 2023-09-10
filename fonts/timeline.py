@@ -33,17 +33,6 @@ class FontTimeline(MovingCameraScene):
             width=1
         )
 
-        year_vt = ValueTracker(1757)
-
-        def redraw_year():
-            return (
-                Text(str(int(year_vt.get_value())), font=DB_MONO, color=DB_LIGHT_GREEN)
-                .move_to(frame.get_center())
-                .shift(UP * 3)
-            )
-
-        year_mob = always_redraw(redraw_year)
-
         font_data_mob = VGroup(
             *[
                 VGroup(
@@ -88,7 +77,7 @@ class FontTimeline(MovingCameraScene):
             ]
         )
 
-        self.play(focus_on(frame, ticks[0], buff=10), FadeIn(year_mob))
+        self.play(focus_on(frame, ticks[0], buff=10))
         self.play(FadeIn(font_data_mob, ticks, line))
         self.wait(2)
 
