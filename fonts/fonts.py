@@ -1,6 +1,5 @@
 import sys
 
-from manim.utils.rate_functions import ease_in_out_sine
 
 sys.path.insert(1, "utils/")
 
@@ -90,6 +89,37 @@ class FontTimeline(MovingCameraScene):
                 ),
                 run_time=6,
             )
-            self.wait()
 
         self.wait(3)
+
+
+class CharacterTable(MovingCameraScene):
+    def construct(self):
+        frame = self.camera.frame
+        letters = [[c, str(ord(c))] for c in "abcdefghijklmnopqrstuvwxyz"]
+        symbols = [[c, str(ord(c))] for c in ".,:;-?!*^[]{}#¢%"]
+
+        caps = [[c, str(ord(c))] for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+        nums = [[c, str(ord(c))] for c in "0123456789"]
+        chars_table = Table(
+            letters,
+            element_to_mobject=DBTitle,
+        )
+        nums_table = Table(
+            nums,
+            element_to_mobject=DBTitle,
+        )
+        caps_table = Table(
+            caps,
+            element_to_mobject=DBTitle,
+        )
+        symbols_table = Table(
+            symbols,
+            element_to_mobject=DBTitle,
+        )
+
+        tables = VGroup(nums_table, symbols_table, caps_table, chars_table).arrange(
+            RIGHT, aligned_edge=UP
+        )
+        self.play(focus_on(frame, tables, buff=-20.2))
+        self.play(FadeIn(tables))
